@@ -1,7 +1,17 @@
 import { expect } from 'chai';
 import crypto from 'node:crypto';
 import path from 'node:path';
-import { HTTPApi, MegaHTTPApi, P2PClientProtocol } from 'eufy-security-client';
+import {
+    CommandType,
+    Device,
+    DeviceType,
+    HTTPApi,
+    MegaHTTPApi,
+    P2PClientProtocol,
+    ParamType,
+    PresetPositionType,
+    Station,
+} from 'eufy-security-client';
 import type { DeviceListResponse, MegaResult, StationListResponse } from 'eufy-security-client';
 
 import {
@@ -281,6 +291,107 @@ describe('eufyApiCompat => applyEufyApiCompatibility', () => {
         it('should survive a station list entry without a serial number', () => {
             keepStationsConnected(['T8113N1234']);
             expect(update(undefined, true)).to.equal(true);
+        });
+    });
+
+    describe('Floodlight Cam E30', () => {
+        const serial = 'T8426P0000000000';
+        const sent: { commandType: number; value: string }[] = [];
+        // Both constructors need a live session. The commands only read the fields given here, most
+        // of them private in the typings, so a bare instance carrying just those is enough.
+        const bare = <T>(prototype: T, fields: object): T =>
+            Object.assign(Object.create(prototype as object) as object, fields) as unknown as T;
+        // A standalone floodlight is its own station. The P2P session records the payload instead of
+        // sending it.
+        const station = bare(Station.prototype, {
+            rawStation: {
+                station_sn: serial,
+                device_type: DeviceType.FLOODLIGHT_CAMERA_8426,
+                main_sw_version: '1.2.1.0',
+                member: { admin_user_id: 'admin' },
+            },
+            p2pSession: {
+                sendCommandWithStringPayload: (command: { commandType: number; value: string }): void => {
+                    sent.push(command);
+                },
+                isLiveStreaming: (): boolean => false,
+                getRSAPrivateKey: (): undefined => undefined,
+            },
+        });
+        const device = (type: DeviceType): Device =>
+            bare(Device.prototype, {
+                rawDevice: { device_sn: serial, station_sn: serial, device_type: type, device_channel: 0 },
+            });
+        const lastPayload = (): { commandType: number; data: Record<string, unknown> } => {
+            expect(sent, 'a command must reach the P2P session').to.have.length(1);
+            expect(sent[0].commandType).to.equal(CommandType.CMD_DOORBELL_SET_PAYLOAD);
+            return JSON.parse(sent[0].value) as { commandType: number; data: Record<string, unknown> };
+        };
+        const e30Messages = (): number => messages.filter(message => message.includes('(T8426)')).length;
+
+        beforeEach(() => {
+            sent.length = 0;
+        });
+
+        it('should classify the E30 as the E340 it is defined as, and no other type with it', () => {
+            expect(Device.isFloodLightT8425(DeviceType.FLOODLIGHT_CAMERA_8426)).to.equal(true);
+            expect(Device.isFloodLightT8425(DeviceType.FLOODLIGHT_CAMERA_8425)).to.equal(true);
+            for (const type of [
+                DeviceType.FLOODLIGHT,
+                DeviceType.FLOODLIGHT_CAMERA_8422,
+                DeviceType.FLOODLIGHT_CAMERA_8423,
+                DeviceType.FLOODLIGHT_CAMERA_8424,
+                DeviceType.SOLO_CAMERA_E30,
+                10031,
+                0,
+                -1,
+                NaN,
+            ]) {
+                expect(Device.isFloodLightT8425(type), `type ${type}`).to.equal(false);
+            }
+            expect(device(DeviceType.FLOODLIGHT_CAMERA_8426).isFloodLightT8425()).to.equal(true);
+        });
+
+        it('should send the preset commands to an E30', () => {
+            const commands: [(device: Device, position: PresetPositionType) => void, CommandType][] = [
+                [station.presetPosition, CommandType.CMD_FLOODLIGHT_SET_MOTION_PRESET_POSITION],
+                [station.savePresetPosition, CommandType.CMD_FLOODLIGHT_SAVE_MOTION_PRESET_POSITION],
+                [station.deletePresetPosition, CommandType.CMD_FLOODLIGHT_DELETE_MOTION_PRESET_POSITION],
+            ];
+            for (const [command, commandType] of commands) {
+                for (const position of [PresetPositionType.PRESET_1, PresetPositionType.PRESET_4]) {
+                    sent.length = 0;
+                    command.call(station, device(DeviceType.FLOODLIGHT_CAMERA_8426), position);
+                    expect(lastPayload()).to.deep.equal({ commandType, data: { value: position } });
+                }
+            }
+        });
+
+        it('should still reject a preset the camera does not have', () => {
+            expect(() =>
+                station.presetPosition(device(DeviceType.FLOODLIGHT_CAMERA_8426), 4 as PresetPositionType),
+            ).to.throw('Invalid value for this command');
+            expect(sent).to.have.length(0);
+        });
+
+        it('should start the livestream of an E30 with the payload of the E340', () => {
+            station.startLivestream(device(DeviceType.FLOODLIGHT_CAMERA_8426));
+            const { commandType, data } = lastPayload();
+            expect(commandType).to.equal(ParamType.COMMAND_START_LIVESTREAM);
+            // The E30 rejects the start without these with ERROR_INVALID_ACCOUNT (-104).
+            expect(data).to.include({ accountId: 'admin', camera_type: 0, entrytype: 0 });
+            expect(data).to.not.have.property('account_id');
+        });
+
+        it('should leave the livestream of an older floodlight on its own route', () => {
+            station.startLivestream(device(DeviceType.FLOODLIGHT_CAMERA_8422));
+            const { data } = lastPayload();
+            expect(data).to.include({ account_id: 'admin' });
+            expect(data).to.not.have.property('camera_type');
+        });
+
+        it('should say once that the E30 is handled like the E340', () => {
+            expect(e30Messages()).to.equal(1);
         });
     });
 });

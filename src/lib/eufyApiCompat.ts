@@ -13,6 +13,7 @@
  * 4. RSA PKCS#1 v1.5 decryption: a client option, see eufyClientOptions.
  * 5. Unknown device types: devices the library does not know get no states - see applyEufyApiCompatibility().
  * 6. Kept P2P connection: battery devices on permanent power can opt out of the 30s disconnect - same.
+ * 7. Floodlight Cam E30: defined like the Floodlight Cam E340, but its commands take another route - same.
  *
  * ## 1. Success code
  *
@@ -114,9 +115,24 @@
  *
  * This is an opt-in, not a correction: on a device that really runs on its battery it drains the
  * battery. Remove it once the library offers such an option itself.
+ *
+ * ## 7. Floodlight Cam E30
+ *
+ * The library defines the Floodlight Cam E30 (T8426, type 87) with exactly the properties of the
+ * Floodlight Cam E340 (T8425, type 47), down to the T8425 specific command codes, and with its
+ * commands. But `Device.isFloodLightT8425()`, which every station command and setter asks to pick
+ * the payload, does not include it, so the E30 lands in branches written for older floodlights:
+ * the preset commands are never sent, and the livestream start is rejected with
+ * ERROR_INVALID_ACCOUNT (-104) (both reported in the forum). bropat/eufy-security-client#948 made
+ * four E30 stream by sending them the T8425 payload. Every caller goes through the static
+ * classifier, so it is widened there once.
+ *
+ * Known limit: only the livestream is confirmed on real cameras. Presets, talkback, calibration and
+ * the light and detection settings now take the T8425 route as well, and so does pan and tilt, which
+ * worked on the generic route before.
  */
 
-import { DeviceType, HTTPApi, MegaHTTPApi, P2PClientProtocol, ResponseErrorCode } from 'eufy-security-client';
+import { Device, DeviceType, HTTPApi, MegaHTTPApi, P2PClientProtocol, ResponseErrorCode } from 'eufy-security-client';
 import type {
     ApiResponse,
     DeviceListResponse,
@@ -382,5 +398,25 @@ export const applyEufyApiCompatibility = (log: (message: string) => void): void 
                 `Station ${serial} is a battery device, but it is configured to stay connected: its P2P connection is kept open and reopened when it drops, which drains the battery if the device is not on permanent power.`,
             );
         }
+    };
+
+    // 7. Send the Floodlight Cam E30 the commands of the Floodlight Cam E340 it is defined as.
+    const originalIsFloodLightT8425 = Device.isFloodLightT8425;
+    let reportedFloodlightE30 = false;
+
+    Device.isFloodLightT8425 = function (type: number): boolean {
+        if (originalIsFloodLightT8425.call(this, type)) {
+            return true;
+        }
+        if (!Device.isFloodLightT8426(type)) {
+            return false;
+        }
+        if (!reportedFloodlightE30) {
+            reportedFloodlightE30 = true;
+            log(
+                'The library defines the Floodlight Cam E30 (T8426) like the Floodlight Cam E340 (T8425), but sends it the commands of older floodlights. The adapter makes it send the E340 commands.',
+            );
+        }
+        return true;
     };
 };

@@ -13,6 +13,10 @@
 
 [![NPM](https://nodei.co/npm/iobroker.eusec.png?downloads=true)](https://nodei.co/npm/iobroker.eusec/)
 
+> [!IMPORTANT]
+> This adapter cannot be installed from github
+
+
 This is an [ioBroker](https://www.iobroker.net) adapter that uses the [eufy-security-client](https://github.com/bropat/eufy-security-client) library to communicate with Eufy devices.
 
 **This project is not affiliated with Anker and Eufy (Eufy Security). It is a personal project that is maintained in spare time.**

@@ -31,11 +31,11 @@ One Adapter instance will show all devices from one Eufy Cloud account and allow
 
 ## Documentation
 
-Check out the documentation [here](https://iobroker-community-adapters.github.io/ioBroker.eusec/).
+Check out the documentation [here](https://github.com/iobroker-community-adapters/ioBroker.eusec/tree/master/docs).
 
 ## Known working devices
 
-Information about supported devices can be found [here](https://github.com/bropat/eufy-security-client#known-working-devices).
+Information about supported devices can be found [here](https://github.com/iobroker-community-adapters/ioBroker.eusec/blob/master/docs/devices.md).
 
 ## Credits
 

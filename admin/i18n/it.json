@@ -277,5 +277,11 @@
     "Serbia": "Serbia",
     "Sint Maarten (Dutch part)": "Sint Maarten",
     "South Sudan": "Sudan del Sud",
-    "Kosovo": "Kosovo"
+    "Kosovo": "Kosovo",
+    "Livestream quality": "Qualità del livestream",
+    "Sets the streaming quality of every camera to this one before its livestream starts. \"Auto\" lets the camera change the resolution while the livestream runs, which browsers cannot follow - the picture turns green or freezes. The setting changes the camera itself, like the eufy app does.": "Imposta la qualità di streaming di ogni telecamera su questa prima che inizi il suo livestream. Con \"Auto\" la telecamera cambia la risoluzione durante il livestream, cosa che i browser non riescono a seguire: l'immagine diventa verde o si blocca. L'impostazione modifica la telecamera stessa, come fa l'app eufy.",
+    "As set on the camera": "Come impostato sulla telecamera",
+    "Low": "Bassa",
+    "Medium": "Media",
+    "High": "Alta"
 }

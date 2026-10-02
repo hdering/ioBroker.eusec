@@ -277,5 +277,11 @@
     "Serbia": "塞尔维亚",
     "Sint Maarten (Dutch part)": "荷属圣马丁",
     "South Sudan": "南苏丹",
-    "Kosovo": "科索沃"
+    "Kosovo": "科索沃",
+    "Livestream quality": "直播画质",
+    "Sets the streaming quality of every camera to this one before its livestream starts. \"Auto\" lets the camera change the resolution while the livestream runs, which browsers cannot follow - the picture turns green or freezes. The setting changes the camera itself, like the eufy app does.": "在每个摄像头开始直播之前，将其串流画质设置为此值。\"Auto\" 会让摄像头在直播过程中改变分辨率，浏览器无法跟上 - 画面会变绿或卡住。此设置会像 eufy 应用一样直接更改摄像头本身。",
+    "As set on the camera": "保持摄像头当前设置",
+    "Low": "低",
+    "Medium": "中",
+    "High": "高"
 }

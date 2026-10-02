@@ -61,6 +61,8 @@ A detailed description (in German) is available at our forum (https://forum.iobr
 -->
 ### **WORK IN PROGRESS**
 - (typhosj) Floodlight Cam E30 (T8426): preset positions are now sent to the camera (before, writing `preset_position`, `save_preset_position` or `delete_preset_position` had no effect), and the livestream is no longer rejected with `ERROR_INVALID_ACCOUNT`. The camera now gets the commands of the Floodlight Cam E340, which the library already defines it like (reported in the forum)
+- (hdering) New setting "Livestream quality": sets the streaming quality of every camera to low, medium or high before its livestream starts, so no camera streams at "Auto", where it changes the resolution mid-stream and browsers show a green or frozen picture. The encoding of battery doorbells ("Medium / Low Encoding") is kept. Devices that name their qualities by resolution ("1080P", "2K HD") are left alone, with a warning once per device. Off by default
+- (hdering) The warning about the "Auto" video streaming quality is logged once per device instead of at every livestream start, and names the state to change and the fixed qualities the device offers
 
 ### 3.3.0 (2026-09-21)
 - (typhosj) **Breaking:** the tilt down button of pan and tilt cameras is renamed from `titl_down` to `tilt_down`. The update moves the existing object with its name and custom settings (e.g. history); scripts and visualizations that use the old id have to be changed to `tilt_down`

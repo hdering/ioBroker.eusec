@@ -61,6 +61,8 @@ A detailed description (in German) is available at our forum (https://forum.iobr
 -->
 ### **WORK IN PROGRESS**
 - (typhosj) Floodlight Cam E30 (T8426): preset positions are now sent to the camera (before, writing `preset_position`, `save_preset_position` or `delete_preset_position` had no effect), and the livestream is no longer rejected with `ERROR_INVALID_ACCOUNT`. The camera now gets the commands of the Floodlight Cam E340, which the library already defines it like (reported in the forum)
+- (hdering) **Changed URLs:** without a configured host name, the livestream URLs (states `livestream`, `livestream_rtsp`) now use the IPv4 address of the ioBroker host in the LAN instead of its name (e.g. `http://192.168.1.10:1984/...` instead of `http://iobroker:1984/...`), because tablets, phones and dashboards often cannot resolve the name. Visualizations and scripts that store the URL get the new one with the next livestream; whoever wants to keep the name enters it in the setting "Hostname"
+- (hdering) New tab "Streams" in the instance settings: every device with a livestream with its station, the player URL to open and the RTSP URL - no need to look the streams up in go2rtc anymore
 
 ### 3.3.0 (2026-09-21)
 - (typhosj) **Breaking:** the tilt down button of pan and tilt cameras is renamed from `titl_down` to `tilt_down`. The update moves the existing object with its name and custom settings (e.g. history); scripts and visualizations that use the old id have to be changed to `tilt_down`

@@ -103,11 +103,16 @@
  * Known limit: type 60 has no pan/tilt command and carries battery states the wired C31 lacks. A
  * type of its own needs a C31 on the bench.
  *
- * The eufyCam C37 (T814X, type 10037, #198) is another one: a battery camera with solar panel,
- * light and 360 degree pan and tilt that connects to a HomeBase. The eufyCam S4 (type 89,
- * `CAMERA_S4`) is the same kind of camera; its properties cover all params the C37 sends except
- * `enabled` (6250), and the library treats it as a battery and an outdoor pan and tilt camera.
- * Untested on a C37.
+ * The eufyCam C37 (T814X, type 10037, iobroker-community-adapters/ioBroker.eusec#198) is another
+ * one: a battery camera with solar panel, light and 360 degree pan and tilt that connects to a
+ * HomeBase. Of all known types, the eufyCam S4 (type 89, `CAMERA_S4`) maps the most of its params:
+ * the C37 reports a param for every S4 property except `enabled` (6250), and the library treats the
+ * S4 as a battery and an outdoor pan and tilt camera.
+ *
+ * Known limit: untested on a C37. Settings are sent the way the library sends them to an S4, which
+ * for detection types is the SoloCam S340 route (`isOutdoorPanAndTiltCamera()`). The C37 also gets
+ * the state for the second lens of the S4 (`dualCamWatchViewMode`). Its params for notification
+ * types (6027), motion detection type (1252) and auto night vision (1013) have no state.
  *
  * ## 6. Kept P2P connection
  *
@@ -205,7 +210,7 @@ export const describeSubstitutedDevice = (substituted: SubstitutedEntry): string
     return (
         `Parameters of ${String(entry.device_name)} (type ${type}, model ${String(entry.device_model)}, ` +
         `firmware ${String(entry.main_sw_version)}, hardware ${String(entry.main_hw_version)}) - please post them ` +
-        `in #${DEVICE_TYPE_SUBSTITUTES[type]?.issue} with serial numbers, IP addresses, WLAN names, keys and tokens replaced by xxx: ${JSON.stringify(
+        `in #${DEVICE_TYPE_SUBSTITUTES[type].issue} with serial numbers, IP addresses, WLAN names, keys and tokens replaced by xxx: ${JSON.stringify(
             entry.params,
         )}`
     );

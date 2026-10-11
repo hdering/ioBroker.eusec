@@ -192,7 +192,7 @@ describe('eufyApiCompat => applyEufyApiCompatibility', () => {
             return Promise.resolve([
                 { device_sn: 'T8170', device_type: 10031, params: [] },
                 { device_sn: 'T8000', device_type: 1, params: [] },
-                { device_sn: 'T8140', device_type: 10037, params: [] },
+                { device_sn: 'C37SERIAL', device_type: 10037, params: [] },
             ] as unknown as DeviceListResponse[]);
         };
         HTTPApi.prototype.getStationList = function (): Promise<StationListResponse[]> {
